@@ -1,0 +1,28 @@
+{# templates/base.html #}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Chinese Shadow Figures</title>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul>
+          <li>About</li>
+          <li>Catalog</li>
+          <li>Gallery</li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      {% block content %}
+        <p>Content goes here.</p>
+      {% endblock content %}
+    </main>
+    <footer>
+      <span class="copyright">© 2023 The Trustees of Princeton University</span>
+    </footer>
+  </body>
+</html>

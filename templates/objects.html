@@ -1,0 +1,19 @@
+{# templates/objects.html #}
+
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>{{type}}</h2>
+  <dl>
+  {% for object in objects %}
+    <dt>object {{object.objectno}}</dt>
+  <dd>{{ object.description }}</dd>
+
+     {% for img in object.images %}
+       <dd><a href="../images/{{img}}">
+           <img src="../thumbnails/{{img}}" />
+       </a></dd>
+     {% endfor %}
+  {% endfor %}
+  </dl>
+{% endblock content  %}
