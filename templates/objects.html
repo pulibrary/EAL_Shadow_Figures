@@ -3,7 +3,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h2>{{type}}</h2>
+  <section>
+    <h2>{{type}}</h2>
+    <nav>
+      <ul>
+        {% for i in nav %}
+          <li><a href="{{i.link}}">{{i.label}}</a></li>
+        {% endfor %}
+        </ul>
+      </nav>
   <dl>
   {% for object in objects %}
     <dt>object {{object.objectno}}</dt>
@@ -16,4 +24,5 @@
      {% endfor %}
   {% endfor %}
   </dl>
+  </section>
 {% endblock content  %}
