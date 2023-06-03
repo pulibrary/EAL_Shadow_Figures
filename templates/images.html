@@ -1,0 +1,14 @@
+{# templates/images.html #}
+
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+  <img src="image_pages/{{image}}" />
+  <ul>
+    {% for desc in descriptions %}
+    <li>{{desc}}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock content %}

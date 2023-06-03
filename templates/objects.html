@@ -14,12 +14,12 @@
       </nav>
   <dl>
   {% for object in objects %}
-    <dt>object {{object.objectno}}</dt>
-  <dd>{{ object.description }}</dd>
+    <dt>object {{object.id}}</dt>
+    <dd>{{ object.description }}</dd>
 
      {% for img in object.images %}
-       <dd><a href="../images/{{img}}">
-           <img src="../thumbnails/{{img}}" />
+       <dd><a href="image_pages/{{img}}">
+           <img src="thumbnails/{{img}}" />
        </a></dd>
      {% endfor %}
   {% endfor %}

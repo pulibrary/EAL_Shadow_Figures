@@ -1,56 +1,65 @@
+import os
 from jinja2 import Environment, FileSystemLoader
 from csv import DictReader, reader
 from pathlib import Path
-from models import ObjectRecord
+from models import ObjectRecord, Object, Image
+import shadows
 
 data_path = Path('shadowfigures.csv')
+site_dir = Path("site")
+image_page_dir = site_dir / Path("image_pages")
 
-with open(data_path, mode='r', encoding='utf-8') as f:
-    reader = DictReader(f)
-    records = [ObjectRecord(**row) for row in reader]
 
 image_index = {}
-object_index = []
-# type_index = {}
-types = set()
+for record in records:
+    for filename in record.imagename.split('|'):
+        image = Image(id=filename.split(".")[0], filename=filename)
+        image_index[image.id] = image
+
+
+types: dict = set()
+object_list: list = []
 
 for record in records:
     types.add(record.objecttype)
-    images = record.imagename.split('|')
-    for image in images:
-        if image in image_index:
-            image_index[image].append(record.objectno)
-        else:
-            image_index[image] = [record.objectno]
 
-    metadata = {
-        "objectno": record.objectno,
-        "objecttype": record.objecttype,
-        "images": images,
-        "description": record.description,
-    }
+    object = Object(
+        id=record.objectno, type=record.objecttype, description=record.description
+    )
 
-    if record.notes:
-        metadata["notes"] = record.notes
+    for filename in record.imagename.split('|'):
+        image_id = filename.split(".")[0]
+        image: Image = image_index[image_id]
+        object.images.append(image.filename)
+        image_index[image.id].objects.append(object.id)
+    object_list.append(object)
 
-    if record.dimensions:
-        metadata["dimensions"] = record.dimensions
 
-    object_index.append(metadata)
+object_type_pages = []
+for obj_type in types:
+    page: str = f"{obj_type.replace(' ', '_')}.html"
+    object_type_pages.append({"label": obj_type, "link": page})
 
 environment = Environment(loader=FileSystemLoader("templates"))
 
 
 template = environment.get_template("objects.html")
 
-base_path: Path = Path("site")
-paths = []
 for obj_type in types:
-    page: str = f"{obj_type.replace(' ', '_')}.html"
-    paths.append({"label": obj_type, "link": page})
+    objects = [obj for obj in object_list if obj.type == obj_type]
+    context = [obj.dict() for obj in objects]
 
-for obj_type in types:
-    path: Path = base_path / Path(obj_type.replace(" ", "_"))
-    context = [obj for obj in object_index if obj['objecttype'] == obj_type]
-    with open(path.with_suffix(".html"), mode="w", encoding="utf-8") as f:
-        f.write(template.render(objects=context, nav=paths, type=obj_type))
+    path: Path = site_dir / Path(obj_type.replace(" ", "_")).with_suffix(".html")
+    with open(path, mode="w", encoding="utf-8") as f:
+        f.write(template.render(objects=context, nav=object_type_pages, type=obj_type))
+
+
+base_path: Path = Path("site/image_pages")
+
+for img, oblist in image_index.items():
+    objects = list(filter(lambda x: x.id in oblist, object_list))
+    descriptions = [o["description"] for o in objects]
+
+    page: Path = image_page_dir / Path(img.split(".")[0]).with_suffix(".html")
+    with open(page, mode="w", encoding="utf-8") as f:
+        f.write(template.render(image=img, descriptions=descriptions))

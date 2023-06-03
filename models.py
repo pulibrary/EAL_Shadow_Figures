@@ -18,3 +18,16 @@ class ObjectRecord(BaseModel):
     imageexists: str
     imagetype: str
     imagedesc: str
+
+
+class Object(BaseModel):
+    id: str
+    type: str
+    description: str
+    images: list["Image"] = []
+
+
+class Image(BaseModel):
+    id: str
+    filename: str
+    objects: list[Object] = []
