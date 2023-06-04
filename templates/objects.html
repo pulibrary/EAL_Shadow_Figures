@@ -18,8 +18,8 @@
     <dd>{{ object.description }}</dd>
 
      {% for img in object.images %}
-       <dd><a href="image_pages/{{img}}">
-           <img src="thumbnails/{{img}}" />
+       <dd><a href="{{img.path}}">
+           <img src="{{img.thumbnail}}" />
        </a></dd>
      {% endfor %}
   {% endfor %}

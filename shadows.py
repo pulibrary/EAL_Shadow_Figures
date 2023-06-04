@@ -21,7 +21,10 @@ class ShadowImage:
     def context(self, context: dict) -> dict:
         my_context = {"id": self.id}
         if "image_path" in context:
-            my_context["path"] = context["image_path"] / Path(self.filename)
+            my_context["path"] = context["image_path"] / Path(self.id).with_suffix(
+                ".html"
+            )
+            my_context["thumbnail"] = Path("thumbnails") / Path(self.filename)
         else:
             my_context["path"] = Path(self.filename)
         return my_context
@@ -84,7 +87,7 @@ class TypePage(Page):
         path = base_path / self.path
         context = self.context(context={"image_path": image_path})
 
-        with open(path, mode="w", encoding="utf-c8") as f:
+        with open(path, mode="w", encoding="utf-8") as f:
             f.write(template.render(type=self.type, objects=context["objects"]))
 
 
