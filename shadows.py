@@ -154,6 +154,13 @@ class ShadowFigureSiteGenerator:
             records = [ObjectRecord(**row) for row in reader]
         self.shadow_objects = [ShadowObject(record) for record in records]
 
+    def generate(self, site_dir: str) -> None:
+        for page in self.type_pages:
+            page.render(site_dir)
+
+        for page in self.image_pages:
+            page.render(site_dir)
+
     @property
     def image_index(self) -> dict:
         if self._image_index is None:
