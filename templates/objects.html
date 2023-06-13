@@ -4,7 +4,7 @@
 
 {% block content %}
   <section>
-    <h2>{{type}}</h2>
+    <h2>{{object_class}}</h2>
     <nav>
       <ul>
         {% for i in nav %}
@@ -18,7 +18,7 @@
     <dd>{{ object.description }}</dd>
 
      {% for img in object.images %}
-       <dd><a href="{{img.path}}">
+       <dd><a href="{{img.page_url}}">
            <img src="{{img.thumbnail}}" />
        </a></dd>
      {% endfor %}
