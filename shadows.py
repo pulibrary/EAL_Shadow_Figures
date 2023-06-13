@@ -1,13 +1,24 @@
+"""shadows.py  Classes for generating HTML pages for EAL Shadow Figures collection.
+
+EAL wishes to migrate an old website containing amateur images of
+items in their collection and informal metadata about them.  This
+module contains classes that read data from a CSV file and use Jinja
+templates to generate a static site that provides most of the features
+of the original site.
+"""
+
 import os
 from typing import Optional
 from jinja2 import Environment, FileSystemLoader
 from csv import DictReader, reader
 from pathlib import Path
-from models import ObjectRecord, Object, Image
+from pydantic import ValidationError
+from models import ObjectRecord, Object, Image, ObjectType, type_to_label
 
 
-def clean_type(type_string) -> str:
-    return type_string.replace(" ", "_")
+# def clean_type(type_string) -> str:
+#     """Untaints the string representing figure types"""
+#     return type_string.replace(" ", "_")
 
 
 class ShadowImage:
@@ -34,8 +45,9 @@ class ShadowImage:
 class ShadowObject:
     def __init__(self, record: ObjectRecord) -> None:
         self.id = record.objectno
-        self.type = clean_type(record.objecttype)
-        self.description = record.description
+        # self.type = clean_type(record.objecttype)
+        self.type: ObjectType = record.objecttype
+        self.description: str = record.description
         self.notes = record.notes
         self.dimensions = record.dimensions
         self.associated_images = None
@@ -51,7 +63,7 @@ class ShadowObject:
         image_contexts = [image.context(context) for image in self.associated_images]
         my_context = {
             "id": self.id,
-            "type": self.type,
+            "type": type_to_label(self.type),
             "description": self.description,
             "notes": self.notes,
             "dimensions": self.dimensions,
@@ -61,23 +73,23 @@ class ShadowObject:
 
 
 class Page:
-    def __init__(self, id: str) -> None:
-        self.id = id
-        self.path: Path = Path(f"{id}.html")
+    def __init__(self, object_type: ObjectType) -> None:
+        self.id: ObjectType = object_type
+        self.path: Path = Path(f"{self.id.name}.html")
 
 
 class TypePage(Page):
-    def __init__(self, type_id: str, objects: list[ShadowObject]) -> None:
-        super().__init__(type_id)
-        self.type = type_id
+    def __init__(self, object_type: ObjectType, objects: list[ShadowObject]) -> None:
+        super().__init__(object_type)
+        self.type: ObjectType = object_type
         self.objects = [obj for obj in objects if obj.type == self.type]
 
     def __repr__(self) -> str:
-        return f"TypePage({self.type})"
+        return f"TypePage({self.type.name})"
 
     def context(self, context: dict = {}) -> dict:
         my_context = {
-            "type": self.type,
+            "type": type_to_label(self.type),
             "objects": [obj.context(context) for obj in self.objects],
         }
         return my_context
@@ -89,7 +101,7 @@ class TypePage(Page):
         context = self.context(context={"image_path": image_path})
 
         with open(path, mode="w", encoding="utf-8") as f:
-            f.write(template.render(type=self.type, objects=context["objects"]))
+            f.write(template.render(type=context["type"], objects=context["objects"]))
 
 
 class ImagePage(Page):
@@ -98,8 +110,8 @@ class ImagePage(Page):
         self.shadow_image: ShadowImage = shadow_image
 
 
-def all_types(obj_list: list[ShadowObject]) -> set:
-    return {object.type for object in obj_list}
+# def all_types(obj_list: list[ShadowObject]) -> set:
+#     return {object.type for object in obj_list}
 
 
 class ShadowFigureSiteGenerator:
@@ -113,7 +125,7 @@ class ShadowFigureSiteGenerator:
 
     def read(self, file_path: Path) -> None:
         with open(file_path, mode='r', encoding='utf-8') as f:
-            reader = DictReader(f)
+            reader: DictReader = DictReader(f, fieldnames=None)
             records = [ObjectRecord(**row) for row in reader]
         self.shadow_objects = [ShadowObject(record) for record in records]
 
@@ -136,7 +148,8 @@ class ShadowFigureSiteGenerator:
     def type_pages(self) -> list[TypePage]:
         if self._type_pages is None:
             self._type_pages = []
-            for type in all_types(self.shadow_objects):
+            types: set[ObjectType] = {object.type for object in self.shadow_objects}
+            for type in types:
                 self.type_pages.append(TypePage(type, self.shadow_objects))
         return self._type_pages
 
