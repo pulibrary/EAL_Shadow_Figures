@@ -16,21 +16,35 @@ from pydantic import ValidationError
 from models import ObjectRecord, Object, Image, ObjectType, type_to_label
 
 
-# def clean_type(type_string) -> str:
-#     """Untaints the string representing figure types"""
-#     return type_string.replace(" ", "_")
-
-
 class ShadowImage:
     def __init__(self, filename: str) -> None:
         self.filename = filename
         self.id = filename.split('.')[0]
-        self.associated_objects = []
+        self.associated_objects: list("ShadowObject") = []
 
     def __repr__(self) -> str:
         return f"ShadowImage({self.id})"
 
+    # def context(self, context: dict) -> dict:
+    #     my_context = {"id": self.id}
+    #     my_context["image"] = Path("images") / Path(self.filename)
+    #     my_context["thumbnail"] = Path("thumbnails") / Path(self.filename)
+
+    #     return my_context
+
     def context(self, context: dict) -> dict:
+        my_context = {"id": self.id}
+        my_context["thumbnail"] = Path("thumbnails") / Path(self.filename)
+        if "image_path" in context:
+            my_context["path"] = context["image_path"] / Path(self.id).with_suffix(
+                ".html"
+            )
+        else:
+            my_context["path"] = Path(self.filename)
+
+        return my_context
+
+    def context_old(self, context: dict) -> dict:
         my_context = {"id": self.id}
         if "image_path" in context:
             my_context["path"] = context["image_path"] / Path(self.id).with_suffix(
@@ -73,14 +87,15 @@ class ShadowObject:
 
 
 class Page:
-    def __init__(self, object_type: ObjectType) -> None:
-        self.id: ObjectType = object_type
-        self.path: Path = Path(f"{self.id.name}.html")
+    pass
 
 
 class TypePage(Page):
     def __init__(self, object_type: ObjectType, objects: list[ShadowObject]) -> None:
-        super().__init__(object_type)
+        # super().__init__(object_type)
+        self.id: ObjectType = object_type
+        self.path: Path = Path(f"{object_type.name}.html")
+
         self.type: ObjectType = object_type
         self.objects = [obj for obj in objects if obj.type == self.type]
 
@@ -106,12 +121,35 @@ class TypePage(Page):
 
 class ImagePage(Page):
     def __init__(self, shadow_image: ShadowImage) -> None:
-        super().__init__(self)
         self.shadow_image: ShadowImage = shadow_image
+        self.path: Path = Path(f"{shadow_image.id}.html")
 
+    def context(self, context: dict = {}) -> dict:
+        descriptions = [
+            object.description for object in self.shadow_image.associated_objects
+        ]
 
-# def all_types(obj_list: list[ShadowObject]) -> set:
-#     return {object.type for object in obj_list}
+        if "image_path" in context:
+            image = context["image_path"] / Path(self.shadow_image.filename)
+        else:
+            image = Path(self.shadow_image.filename)
+        my_context = {
+            "image": str(image),
+            "descriptions": descriptions,
+        }
+        return my_context
+
+    def render(self, base_path: Path, image_page_path: Path, image_path: Path) -> None:
+        environment = Environment(loader=FileSystemLoader("templates"))
+        template = environment.get_template("images.html")
+        path = base_path / image_page_path / self.path
+        context = self.context(context={"image_path": image_path})
+        with open(path, mode="w", encoding="utf-8") as f:
+            f.write(
+                template.render(
+                    image=context["image"], descriptions=context["descriptions"]
+                )
+            )
 
 
 class ShadowFigureSiteGenerator:
