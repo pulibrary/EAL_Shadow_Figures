@@ -49,23 +49,26 @@ class ShadowImage:
 
 class ShadowObject:
     def __init__(self, record: ObjectRecord) -> None:
-        self.id = record.objectno
+        self.id: str = record.objectno
         self.type: ObjectType = record.objecttype
         self.description: str = record.description
-        self.notes = record.notes
-        self.dimensions = record.dimensions
-        self.associated_images = None
+        self.notes: str = record.notes
+        self.dimensions: str = record.dimensions
+        self.associated_images: list[ShadowImage] | None = []
         if record.imagename:
-            self.associated_images = [
-                ShadowImage(fname) for fname in record.imagename.split('|')
-            ]
+            fnames = record.imagename.split('|')
+            for fname in fnames:
+                if fname != "NOT FOUND":
+                    self.associated_images.append(ShadowImage(fname))
 
     def __repr__(self) -> str:
         return f"ShadowObject({self.id})"
 
     def context(self, context: dict = {}) -> dict:
-        image_contexts = [image.context(context) for image in self.associated_images]
-        my_context = {
+        image_contexts: list[dict] = [
+            image.context(context) for image in self.associated_images
+        ]
+        my_context: dict = {
             "id": self.id,
             "object_class": type_to_label(self.type),
             "description": self.description,
@@ -86,7 +89,9 @@ class TypePage(Page):
         self.filename: str = f"{object_type.name}.html"
 
         self.type: ObjectType = object_type
-        self.objects = [obj for obj in objects if obj.type == self.type]
+        self.objects: list[ShadowObject] = [
+            obj for obj in objects if obj.type == self.type
+        ]
 
     def __repr__(self) -> str:
         return f"TypePage({self.type.name})"
@@ -98,7 +103,7 @@ class TypePage(Page):
             return self.filename
 
     def context(self, context: dict = {}) -> dict:
-        my_context = {
+        my_context: dict = {
             "object_class": type_to_label(self.type),
             "objects": [obj.context(context) for obj in self.objects],
         }
@@ -121,11 +126,11 @@ class ImagePage(Page):
         return self.shadow_image.image_url
 
     def context(self, context: dict = {}) -> dict:
-        descriptions = [
+        descriptions: list[str] = [
             object.description for object in self.shadow_image.associated_objects
         ]
 
-        my_context = {
+        my_context: dict = {
             "image_url": self.image_url,
             "descriptions": descriptions,
         }
@@ -141,8 +146,8 @@ class ImagePage(Page):
 
 class ShadowFigureSiteGenerator:
     def __init__(self, source_path: Path) -> None:
-        self.shadow_objects = None
-        self.shadow_images = None
+        self.shadow_objects: Optional[list[ShadowObject]] = None
+        self.shadow_images: Optional[list[ShadowImage]] = None
         self._image_index: Optional[dict] = None
         self._type_pages: Optional[list[TypePage]] = None
         self._image_pages: Optional[list[ImagePage]] = None
@@ -155,11 +160,13 @@ class ShadowFigureSiteGenerator:
         self.shadow_objects = [ShadowObject(record) for record in records]
 
     def generate(self, site_dir: str) -> None:
-        for page in self.type_pages:
-            page.render(site_dir)
+        if self.type_pages:
+            for page in self.type_pages:
+                page.render(site_dir)
 
-        for page in self.image_pages:
-            page.render(site_dir)
+        if self.image_pages:
+            for page in self.image_pages:
+                page.render(site_dir)
 
     @property
     def image_index(self) -> dict:
@@ -182,7 +189,7 @@ class ShadowFigureSiteGenerator:
             self._type_pages = []
             types: set[ObjectType] = {object.type for object in self.shadow_objects}
             for type in types:
-                self.type_pages.append(TypePage(type, self.shadow_objects))
+                self._type_pages.append(TypePage(type, self.shadow_objects))
         return self._type_pages
 
     @property
