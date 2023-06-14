@@ -64,6 +64,10 @@ class ShadowObject:
     def __repr__(self) -> str:
         return f"ShadowObject({self.id})"
 
+    @property
+    def page_url(self) -> str:
+        return f"{self.id}.html"
+
     def context(self, context: dict = {}) -> dict:
         image_contexts: list[dict] = [
             image.context(context) for image in self.associated_images
@@ -71,6 +75,7 @@ class ShadowObject:
         my_context: dict = {
             "id": self.id,
             "object_class": type_to_label(self.type),
+            "page_url": self.page_url,
             "description": self.description,
             "notes": self.notes,
             "dimensions": self.dimensions,
@@ -106,7 +111,6 @@ class TypePage(Page):
         my_context: dict = {
             "object_class": type_to_label(self.type),
             "objects": [obj.context(context) for obj in self.objects],
-            "nav": [{"link": "jing_head.html", "label": "Jing Heads"}],
         }
         return my_context
 
@@ -127,20 +131,44 @@ class ImagePage(Page):
         return self.shadow_image.image_url
 
     def context(self, context: dict = {}) -> dict:
-        descriptions: list[dict] = [
-            {"id": object.id, "description": object.description}
-            for object in self.shadow_image.associated_objects
+        associated_objects: list[dict] = [
+            obj.context() for obj in self.shadow_image.associated_objects
         ]
 
         my_context: dict = {
             "image_url": self.image_url,
-            "descriptions": descriptions,
+            "associated_objects": associated_objects,
         }
         return my_context
 
     def render(self, base_path: Path) -> None:
         environment = Environment(loader=FileSystemLoader("templates"))
         template = environment.get_template("images.html")
+        path = base_path / self.filename
+        with open(path, mode="w", encoding="utf-8") as f:
+            f.write(template.render(self.context()))
+
+
+class ObjectPage(Page):
+    def __init__(self, shadow_object: ShadowObject) -> None:
+        self.shadow_object: ShadowObject = shadow_object
+        self.filename: str = f"{shadow_object.id}.html"
+
+    def context(self, context: dict = {}) -> dict:
+        my_context = {
+            "id": self.shadow_object.id,
+            "type": self.shadow_object.type.name,
+            "description": self.shadow_object.description,
+            "dimensions": self.shadow_object.dimensions,
+            "associated_images": [
+                img.context({}) for img in self.shadow_object.associated_images
+            ],
+        }
+        return my_context
+
+    def render(self, base_path: Path) -> None:
+        environment = Environment(loader=FileSystemLoader("templates"))
+        template = environment.get_template("object.html")
         path = base_path / self.filename
         with open(path, mode="w", encoding="utf-8") as f:
             f.write(template.render(self.context()))
@@ -153,6 +181,7 @@ class ShadowFigureSiteGenerator:
         self._image_index: Optional[dict] = None
         self._type_pages: Optional[list[TypePage]] = None
         self._image_pages: Optional[list[ImagePage]] = None
+        self._object_pages: Optional[list[ObjectPage]] = None
         self.read(source_path)
 
     def read(self, file_path: Path) -> None:
@@ -168,6 +197,10 @@ class ShadowFigureSiteGenerator:
 
         if self.image_pages:
             for page in self.image_pages:
+                page.render(site_dir)
+
+        if self.object_pages:
+            for page in self.object_pages:
                 page.render(site_dir)
 
     @property
@@ -201,3 +234,11 @@ class ShadowFigureSiteGenerator:
             for index, shadow_image in self.image_index.items():
                 self._image_pages.append(ImagePage(shadow_image))
         return self._image_pages
+
+    @property
+    def object_pages(self) -> list[ObjectPage]:
+        if self._object_pages is None:
+            self._object_pages = []
+            for object in self.shadow_objects:
+                self._object_pages.append(ObjectPage(object))
+        return self._object_pages

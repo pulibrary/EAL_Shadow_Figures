@@ -6,9 +6,9 @@
 <section>
   <img class="photo" src="{{image_url}}" />
   <dl class="descriptions">
-    {% for item in descriptions %}
-      <dt>{{item.id}}</dt>
-      <dd>{{item.description}}
+    {% for obj in associated_objects %}
+      <dt><a href="{{obj.page_url}}">{{obj.id}}</a>
+      <dd>{{obj.description}}
     {% endfor %}
   </dl>
 </section>
