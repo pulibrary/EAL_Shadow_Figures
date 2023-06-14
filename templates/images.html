@@ -3,12 +3,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div>
-  <img src="{{image_url}}" />
-  <ul>
+<section class="photo">
+  <img class="photo" src="{{image_url}}" />
+  <ul class="descriptions">
     {% for desc in descriptions %}
     <li>{{desc}}</li>
     {% endfor %}
   </ul>
-</div>
+</section>
 {% endblock content %}

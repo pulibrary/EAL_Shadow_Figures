@@ -106,6 +106,7 @@ class TypePage(Page):
         my_context: dict = {
             "object_class": type_to_label(self.type),
             "objects": [obj.context(context) for obj in self.objects],
+            "nav": [{"link": "jing_head.html", "label": "Jing Heads"}],
         }
         return my_context
 

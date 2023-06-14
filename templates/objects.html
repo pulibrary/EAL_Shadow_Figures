@@ -5,13 +5,6 @@
 {% block content %}
   <section>
     <h2>{{object_class}}</h2>
-    <nav>
-      <ul>
-        {% for i in nav %}
-          <li><a href="{{i.link}}">{{i.label}}</a></li>
-        {% endfor %}
-        </ul>
-      </nav>
   <dl>
   {% for object in objects %}
     <dt>object {{object.id}}</dt>
