@@ -127,8 +127,9 @@ class ImagePage(Page):
         return self.shadow_image.image_url
 
     def context(self, context: dict = {}) -> dict:
-        descriptions: list[str] = [
-            object.description for object in self.shadow_image.associated_objects
+        descriptions: list[dict] = [
+            {"id": object.id, "description": object.description}
+            for object in self.shadow_image.associated_objects
         ]
 
         my_context: dict = {

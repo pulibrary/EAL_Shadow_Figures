@@ -5,10 +5,11 @@
 {% block content %}
 <section>
   <img class="photo" src="{{image_url}}" />
-  <ul class="descriptions">
-    {% for desc in descriptions %}
-    <li>{{desc}}</li>
+  <dl class="descriptions">
+    {% for item in descriptions %}
+      <dt>{{item.id}}</dt>
+      <dd>{{item.description}}
     {% endfor %}
-  </ul>
+  </dl>
 </section>
 {% endblock content %}
