@@ -6,8 +6,8 @@
   <section>
     <h2>{{object_class}}</h2>
   <dl>
-  {% for object in objects %}
-    <dt>object {{object.id}}</dt>
+    {% for object in objects %}
+    <dt><a href="{{object.page_url}}">{{object.id}}</a></dt>
     <dd>{{ object.description }}</dd>
 
      {% for img in object.images %}
