@@ -1,0 +1,16 @@
+body {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    background-color: #FFEECC;
+}
+
+.photo {
+    max-width: 95%;
+}
+
+.descriptions {
+    max-width: 95%;
+}
+
+ul.nav > li {
+    display: inline-block;
+}
