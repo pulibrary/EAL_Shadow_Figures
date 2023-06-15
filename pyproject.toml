@@ -1,18 +1,20 @@
 [tool.poetry]
 name = "eal-shadow-figures"
 version = "0.1.0"
-description = ""
+description = "A tool to generate EAL Shadow Figures site"
 authors = ["cwulfman <cwulfman@princeton.edu>"]
 readme = "README.md"
-packages = [{include = "eal_shadow_figures"}]
+
+[tool.poetry.scripts]
+build-site = "build_site:app"
 
 [tool.poetry.dependencies]
 python = "^3.11"
 pydantic = "^1.10.8"
 Jinja2 = "^3.1.2"
-python-lsp-server = "^1.7.3"
 
 [tool.poetry.group.dev.dependencies]
+python-lsp-server = "^1.7.3"
 black = "^23.3.0"
 ruff = "^0.0.270"
 pytest = "^7.3.1"

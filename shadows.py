@@ -17,6 +17,14 @@ from models import ObjectRecord, Object, Image, ObjectType, type_to_label
 
 
 class ShadowImage:
+    """Class representing the photos.
+
+    Objects in this class contain the name of the image file, an
+    identifier (the root of the filename), and a list of the objects
+    that appear in the photo.
+
+    """
+
     def __init__(self, filename: str) -> None:
         self.filename: str = filename
         self.id: str = filename.split('.')[0]
@@ -38,6 +46,7 @@ class ShadowImage:
         return f"{self.id}.html"
 
     def context(self, context: dict) -> dict:
+        """Returns values for the Jinja template"""
         my_context = {
             "id": self.id,
             "thumbnail": self.thumbnail_url,
@@ -48,6 +57,13 @@ class ShadowImage:
 
 
 class ShadowObject:
+    """The class representing shadow figures
+
+    Each row in the input CSV file represents an object. This Objects
+    in this class are created from those rows.
+
+    """
+
     def __init__(self, record: ObjectRecord) -> None:
         self.id: str = record.objectno
         self.type: ObjectType = record.objecttype
@@ -69,6 +85,12 @@ class ShadowObject:
         return f"{self.id}.html"
 
     def context(self, context: dict = {}) -> dict:
+        """Returns values for the Jinja template
+
+        Those values include properties of the images (URLs, thumbnails,
+        etc) depicting the object.
+
+        """
         image_contexts: list[dict] = [
             image.context(context) for image in self.associated_images
         ]
@@ -85,6 +107,13 @@ class ShadowObject:
 
 
 class Page:
+    """Base class for pages.  Does nothing for now.
+
+    Pages have render methods that invoke Jinja templates to create
+    HTML pages.
+
+    """
+
     pass
 
 
@@ -175,6 +204,14 @@ class ObjectPage(Page):
 
 
 class ShadowFigureSiteGenerator:
+    """A class of objects to generate site pages.
+
+    Objects in this class read data from a csv file and generate three
+    sets of of html pages: a page for each object category; a page for
+    each photograph; and a page for each object.
+
+    """
+
     def __init__(self, source_path: Path) -> None:
         self.shadow_objects: Optional[list[ShadowObject]] = None
         self.shadow_images: Optional[list[ShadowImage]] = None
