@@ -9,4 +9,7 @@ items in an EAL collection of Chinese shadow figures.
   * run poetry install
 
 ## Usage
-   poetry run python build-site.py
+    To build the site, run
+    
+       poetry run python build-site.py
+       
