@@ -1,0 +1,31 @@
+{# templates/object.html #}
+
+{% extends "base.html" %}
+
+{% block content %}
+  <section>
+    <h2>{{id}}</h2>
+  <dl>
+    <dt>type</dt>
+    <dd>{{type}}</dd>
+
+    <dt>description</dt>
+    <dd>{{description}}</dd>
+
+    <dt>dimensions</dt>
+    <dd>{{dimensions}}</dd>
+
+    <dt>associated images</dt>
+    <dd>
+      <ul>
+        {% for img in associated_images %}
+          <li><a href="{{img.page_url}}">
+              <img src="{{img.thumbnail}}" />
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </dd>
+  </dl>
+  </section>
+{% endblock content  %}
