@@ -227,7 +227,16 @@ class ShadowFigureSiteGenerator:
             records = [ObjectRecord(**row) for row in reader]
         self.shadow_objects = [ShadowObject(record) for record in records]
 
+    def render_index(self, site_dir: str) -> None:
+        environment = Environment(loader=FileSystemLoader("templates"))
+        template = environment.get_template("index.html")
+        path = site_dir / Path("index.html")
+        with open(path, mode="w", encoding="utf-8") as f:
+            f.write(template.render())
+
     def generate(self, site_dir: str) -> None:
+        self.render_index(site_dir)
+
         if self.type_pages:
             for page in self.type_pages:
                 page.render(site_dir)
