@@ -5,11 +5,10 @@ items in an EAL collection of Chinese shadow figures.
 
 ## Installation
   * Clone the git repository
-  * import the images
-  * run poetry install
+    * run poetry install
 
 ## Usage
+    Just open the file site/index.html to start using.
+
     To build the site, run
-    
-       poetry run python build-site.py
-       
+         poetry run python build-site.py
